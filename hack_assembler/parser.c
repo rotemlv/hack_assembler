@@ -98,45 +98,6 @@ void whichCINST(int* d, int* c, int* j, char* line, char* eq, char* smc)
 	}
 }
 
-void which_C_instruction(int *d, int *c, int *j, char *line, char* eq, char *smc)
-{
-	// possibilities (where x is dest, y is comp):
-	/// 1. X=Y
-	/// 2. Y;JMP -> here, x is comp, not dest (there is no assignment)
-	/// 3. X=Y;JMP
-	/// 4. X
-
-	// case 1:
-	if (eq && (!smc))
-	{
-		// we have the location of the equals sign, get dest and comp
-		*d = lookup_instruction_in_dict(dest, line, eq - line).binary; // X=Y -> get the X
-		*c = lookup_instruction_in_dict(comp, ++eq, strlen(eq)).binary; // X=Y -> get the Y
-	}
-
-	// case 2:
-	else if ((!eq) && smc)
-	{
-		// get comp and jmp
-		*c = lookup_instruction_in_dict(comp, line, smc - line).binary;   // X;JMP -> X
-		*j = lookup_instruction_in_dict(jump, ++smc, strlen(smc)).binary; // X;JMP -> JMP
-	}
-
-	// case 3:
-	else if (eq && smc)
-	{
-		// get dest, comp and jmp
-		*d = lookup_instruction_in_dict(dest, line, eq - line).binary;
-		*c = lookup_instruction_in_dict(comp, ++eq, smc - eq).binary;   
-		*j = lookup_instruction_in_dict(jump, ++smc, strlen(smc)).binary; 
-	}
-	// case 4:
-	else
-		*c = lookup_instruction_in_dict(comp, line, strlen(line)).binary; // X -> X
-
-}
-
-
 void load_C_instruction(char* line, Instruction* instruction)
 {
 	char* eq_pointer = strchr(line, '='), * semicolon_pointer = strchr(line, ';');
@@ -146,70 +107,13 @@ void load_C_instruction(char* line, Instruction* instruction)
 	instruction->type = 'C';
 
 	// set parts
-	whichCINST(&dst, &cmp, &jmp, line,eq_pointer, semicolon_pointer); // EXPERIMENTAL
-	// just to be extra, extra sure (remove this when extra)
+	whichCINST(&dst, &cmp, &jmp, line,eq_pointer, semicolon_pointer); 
+	// debug - if we failed reading this instruction, exit (for now)
 	if (dst == -1 || cmp == -1 || jmp == -1)
 	{
-		which_C_instruction(&dst, &cmp, &jmp, line, eq_pointer, semicolon_pointer);
+		printf("Error parsing a C instruction in line %s\nExiting . . . ", line);
+		exit(-1);
 	}
-
-	// set binary (without the 111 "prefix"):
-	// 111 a c1 c.. c6 d1 d2 d3 j1 j2 j3
-	instruction->binary = (jmp)+(dst << 3) + (cmp << 6);
-
-	// for debug purposes:
-	instruction->parts[0] = cmp;
-	instruction->parts[1] = dst;
-	instruction->parts[2] = jmp;
-
-	instruction->symbol = false; // not needed
-
-
-}
-
-
-void load_C_instruction_OLD(char* line, Instruction* instruction)
-{
-	// possibilities (where x is dest/comp, y is comp):
-	/// 1. X=Y
-	/// 2. Y;JMP
-	/// 3. X=Y;JMP
-	/// 4. X
-	char* eq_pointer = strchr(line, '='), * semicolon_pointer = strchr(line, ';');
-	int dst = 0, cmp = 0, jmp = 0;
-
-	// set type
-	instruction->type = 'C';
-
-	// case 1:
-	if (eq_pointer && (!semicolon_pointer))
-	{
-		// we have the location of the equals sign, get dest and comp
-		dst = lookup_instruction_in_dict(dest, line, eq_pointer - line).binary; // X=Y -> get the X
-		cmp = lookup_instruction_in_dict(comp, ++eq_pointer, strlen(eq_pointer)).binary; // X=Y -> get the Y
-	}
-
-	// case 2:
-	else if (semicolon_pointer && (!eq_pointer))
-	{
-		// get comp and jmp
-		cmp = lookup_instruction_in_dict(comp, line, semicolon_pointer - line).binary;   // X;JMP -> X
-		jmp = lookup_instruction_in_dict(jump, ++semicolon_pointer, strlen(semicolon_pointer)).binary; // X;JMP -> JMP
-	}
-
-	// case 3:
-	else if (eq_pointer && semicolon_pointer)
-	{
-		// get dest, comp and jmp
-		dst = lookup_instruction_in_dict(dest, line, eq_pointer - line).binary; // X=Y -> get the X
-		cmp = lookup_instruction_in_dict(comp, ++eq_pointer, semicolon_pointer - eq_pointer).binary;   // 
-		jmp = lookup_instruction_in_dict(jump, ++semicolon_pointer, strlen(semicolon_pointer)).binary; // 
-	}
-
-	// case 4:
-	else
-		cmp = lookup_instruction_in_dict(comp, line, strlen(line)).binary; // X -> X
-
 
 	// set binary (without the 111 "prefix"):
 	// 111 a c1 c.. c6 d1 d2 d3 j1 j2 j3
@@ -284,7 +188,7 @@ int parse(FILE* in, DATA data)
 	return instruction_count;
 }
 
-// stack overflow implementation NON COMPLETE! DOES NOT RETURN JACK
+// stack overflow implementation - not in use
 bool clean_forbidden_characters(char* line) {
 	char* linePtr = line, *orig = line;
 	do {
@@ -315,10 +219,7 @@ bool clean_line(char* line)
 				// bad instruction ends with "/", not "//" (the only invalid input I test)
 				printf("\nBAD ISTRUCTION IN FILE, %s\n", tmp);
 				exit(1);
-				// this WILL create a memory leak now!
-				// ???
-				// ??
-				// ?
+				// this WILL create a memory leak now! solution: return int and use a boolean pointer, or just use 0,1,-1 for f,t,err
 			}
 		}
 		else if (tmp[i] == ' ' || tmp[i] == '\n' || tmp[i] == '\t')

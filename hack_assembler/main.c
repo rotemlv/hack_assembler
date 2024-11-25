@@ -5,63 +5,14 @@
 
 void run_app_from_exe();
 void run_app_from_console(char* arg1, char* arg2);
-#include<stdio.h> 
-
-#include<stdlib.h> 
-
-#include<string.h> 
 
 
-
-int main(int argc, char* argv[])
-
-{
-
-	if (argc != 2 || strlen(argv[1]) == 0)
-
-	{
-
-		printf("Error: %d parameter(s) sent to main\n", (argc == 2) ? 1 : argc);
-
-		exit(1); // we can only receive one parameter - the string 
-
-	}
-
-
-
-	char* p = argv[1], c;
-
-	// show argv[1] to screen in uppercase, with '@' as a line delimiter 
-
-	while (*p)
-
-	{
-
-
-
-		c = *p;
-
-		if (*p >= 'a' && *p <= 'z')
-
-			c = (*p) - 32;
-
-		(c == '@') ? printf("\n") : printf("%c", c);
-
-		p++;
-
-	}
-
-	printf("\n");
-	return 0;
-}
-
+int 
 main(int argc, char *argv[])
 {
 	char* out;
 	int n;
-	printf("CURRENT C INSTRUCTION PARSE IS EXPERIMENTAL, FOR VERIFIED RESULTS USE "
-		"THE which_C_instruction FUNCTION CALL (it's probably fine, but I can't be bothered)\n");
-	printf("* Listen carefully as it's very important," // jamesu vilson quote
+	printf("Important warning:"
 		"\n  This program is not to be used anywhere a possibility of remote access is present.\n"
 		"  The scanf-calls will allow buffer overflow, with all the vulnerabilities it comes with! *\n\n");
 	if (argc < 2)
