@@ -7,4 +7,4 @@ However, given my passion for this subject, I chose to implement the full assemb
 
 In this repo you will find both the C code and a few .asm examples for code which can be converted to the required Hack binaries (stored as .hack files).
 
-* This repo requires some cleanup as some of the code includes two or more implementations for some functions (for experimenatation).
+*Currently there are more than a few .asm and .hack examples, might be prudent to clean these to a separate folder in the future.
